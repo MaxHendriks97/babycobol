@@ -1,4 +1,4 @@
-use crate::lexing::token::Token::{self, Accept};
+use crate::lexing::token::Token;
 
 use super::ast::{Atomic, BooleanExpr, Identifier, Stmt};
 
@@ -47,8 +47,8 @@ impl Parser {
     fn parse_statement(&mut self) -> Result<Stmt, ParseError> {
         let token = self.current()?;
         match token {
-            Accept(_) => self.parse_accept(),
-            Add(_) => self.pase_add(),
+            Token::Accept(_) => self.parse_accept(),
+            Token::Add(_) => self.parse_add(),
             _ => Err(ParseError::UnexpectedToken(format!("Expected statement, found {:?}", token))),
         }
     }
@@ -97,7 +97,7 @@ impl Parser {
             Token::StringLiteral(val) => Atomic::StringLiteral(val.clone()),
             Token::BooleanLiteral(val) => Atomic::BooleanLiteral(BooleanExpr(val.clone())),
             Token::Identifier(val) => Atomic::Identifier(Identifier(val.clone())),
-            _ => return Err(ParseError::UnexpectedToken(format!("Expected Atomic, found {:?}", self.current()))),
+            _ => return Err(ParseError::UnexpectedToken(format!("Expected Atomic, found {:?}", self.current()?))),
         };
         self.advance();
 
