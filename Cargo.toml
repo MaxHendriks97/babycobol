@@ -1,0 +1,9 @@
+[package]
+name = "babycobol"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+regex = "1.13.1"
+strum = "0.28.0"
+strum_macros = "0.28.0"

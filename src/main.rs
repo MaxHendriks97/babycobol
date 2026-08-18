@@ -1,0 +1,36 @@
+mod lexing;
+use lexing::lexer::lex;
+
+const INPUT: &str = "
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID.  FIZZBUZZ.
+       DATA DIVISION.
+       01 INT PICTURE IS 9(3).
+       01 REM LIKE INT.
+       01 TMP LIKE INT.
+       PROCEDURE DIVISION.
+           LOOP VARYING INT TO 100
+               DIVIDE 3 INTO INT GIVING TMP REMAINDER REM
+               IF REM = 0
+               THEN DISPLAY \"Fizz\" WITH NO ADVANCING
+      * NB: no END!
+               DIVIDE 5 INTO INT GIVING TMP REMAINDER REM
+               IF REM = 0
+               THEN DISPLAY \"Buzz\" WITH NO ADVANCING
+      * NB: again, no END!
+               DIVIDE 15 INTO INT GIVING TMP REMAINDER REM
+               IF REM = 0
+               THEN DISPLAY \"\"
+               ELSE DISPLAY INT
+      * NB: still, no END!
+           END.
+      * Okay, this is an END but for the LOOP, not for IFs!
+";
+
+fn main() {
+    let tokens = lex(INPUT);
+
+    for t in &tokens {
+        println!("{:?}", t);
+    }
+}
