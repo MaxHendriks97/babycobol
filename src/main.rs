@@ -1,5 +1,6 @@
 mod lexing;
 use lexing::lexer::lex;
+mod parsing;
 
 const INPUT: &str = "
        IDENTIFICATION DIVISION.
