@@ -61,76 +61,11 @@ pub enum Token {
 }
 
 impl Token {
-    pub fn get_token_old(token_type: &str, value: Option<&str>) -> Token {
-        match token_type {
-            // Keywords
-            "ACCEPT" => Token::Accept("ACCEPT".to_string()),
-            "ADD" => Token::Add("ADD".to_string()),
-            "GIVING" => Token::Giving("GIVING".to_string()),
-            "DISPLAY" => Token::Display("DISPLAY".to_string()),
-            "DELIMITED" => Token::Delimited("DELIMITED".to_string()),
-            "BY" => Token::By("BY".to_string()),
-            "SIZE" => Token::Size("SIZE".to_string()),
-            "SPACE" => Token::Space("SPACE".to_string()),
-            "WITH" => Token::With("WITH".to_string()),
-            "NO" => Token::No("NO".to_string()),
-            "Advancing" => Token::Advancing("ADVANCING".to_string()),
-            "DIVIDE" => Token::Divide("DIVIDE".to_string()),
-            "INTO" => Token::Into("INTO".to_string()),
-            "REMAINDER" => Token::Remainder("REMAINDER".to_string()),
-            "EVALUATE" => Token::Evaluate("EVALUATE".to_string()),
-            "ALSO" => Token::Also("ALSO".to_string()),
-            "WHEN" => Token::When("WHEN".to_string()),
-            "THROUGH" => Token::Through("THROUGH".to_string()),
-            "OTHER" => Token::Other("OTHER".to_string()),
-            "END" => Token::End("END".to_string()),
-            "IF" => Token::If("IF".to_string()),
-            "THEN" => Token::Then("THEN".to_string()),
-            "ELSE" => Token::Else("ELSE".to_string()),
-            "MOVE" => Token::Move("MOVE".to_string()),
-            "HIGH-VALUES" => Token::HighValues("HIGH-VALUES".to_string()),
-            "LOW-VALUES" => Token::LowValues("LOW-VALUES".to_string()),
-            "SPACES" => Token::Spaces("SPACES".to_string()),
-            "MULTIPLY" => Token::Multiply("MULTIPLY".to_string()),
-            "PERFORM" => Token::Perform("PERFORM".to_string()),
-            "TIMES" => Token::Times("TIMES".to_string()),
-            "STOP" => Token::Stop("STOP".to_string()),
-            "SUBTRACT" => Token::Subtract("SUBTRACT".to_string()),
-            "FROM" => Token::From("FROM".to_string()),
-
-            // literals
-            "IntegerLiteral" => Token::IntegerLiteral(value.unwrap().parse::<i32>().unwrap()),
-            "StringLiteral" => Token::StringLiteral(value.unwrap().to_string()),
-            "BooleanLiteral" => {
-                let val = match value.unwrap() {
-                    "TRUE" => true,
-                    "FALSE" => false,
-                    _ => panic!("Invalid boolean literal"),
-                };
-                Token::BooleanLiteral(val)
-            },
-
-            // identifiers
-            "IDENTIFIER" => Token::Identifier(value.unwrap().to_string()),
-
-            // operators
-            "ASSIGN" => Token::Assign("=".to_string()),
-
-            // punctuation
-            "PERIOD" => Token::Period(".".to_string()),
-            "LEFTPAREN"  => Token::LeftParen("(".to_string()),
-            "RIGHTPAREN" => Token::RightParen(")".to_string()),
-
-            // logical operators
-
-            _ => panic!("Invalid token type {}", token_type),
-        }
-    }
-
     pub fn get_token(&self, value: &str) -> Token {
         match self {
             Token::Accept(_) => Token::Accept(value.to_string()),
             Token::Add(_) => Token::Add(value.to_string()),
+            Token::To(_) => Token::To(value.to_string()),
             Token::Giving(_) => Token::Giving(value.to_string()),
             Token::Display(_) => Token::Display(value.to_string()),
             Token::Delimited(_) => Token::Delimited(value.to_string()),
@@ -193,69 +128,11 @@ impl Token {
         }
     }
 
-    pub fn get_token_regex(token_type: &str) -> String {
-        match token_type {
-            "ACCEPT" => r"ACCEPT",
-            "ADD" => r"ADD",
-            "GIVING" => r"GIVING",
-            "DISPLAY" => r"DISPLAY",
-            "DELIMITED" => r"DELIMITED",
-            "BY" => r"BY",
-            "SIZE" => r"SIZE",
-            "SPACE" => r"SPACE",
-            "WITH" => r"WITH",
-            "NO" => r"NO",
-            "Advancing" => r"Advancing",
-            "DIVIDE" => r"DIVIDE",
-            "INTO" => r"INTO",
-            "REMAINDER" => r"REMAINDER",
-            "EVALUATE" => r"EVALUATE",
-            "ALSO" => r"ALSO",
-            "WHEN" => r"WHEN",
-            "THROUGH" => r"THROUGH",
-            "OTHER" => r"OTHER",
-            "END" => r"END",
-            "IF" => r"IF",
-            "THEN" => r"THEN",
-            "ELSE" => r"ELSE",
-            "MOVE" => r"MOVE",
-            "HIGH-VALUES" => r"HIGH-VALUES",
-            "LOW-VALUES" => r"LOW-VALUES",
-            "SPACES" => r"SPACES",
-            "MULTIPLY" => r"MULTIPLY",
-            "PERFORM" => r"PERFORM",
-            "TIMES" => r"TIMES",
-            "STOP" => r"STOP",
-            "SUBTRACT" => r"SUBTRACT",
-            "FROM" => r"FROM",
-
-            // literals
-            "IntegerLiteral" => r"\\d+",
-            "StringLiteral" => r#"\\".*\\""#,
-            "BooleanLiteral" => r"\\b(?:true|false)\\b",
-
-            // identifiers
-            "IDENTIFIER" => r"[a-zA-Z_][a-zA-Z0-9_]*",
-
-            // operators
-            "ASSIGN" => r"=",
-
-            // punctuation
-            "PERIOD" => r".",
-            "LEFTPAREN"  => r"\(",
-            "RIGHTPAREN" => r"\)",
-
-            // logical operator
-
-            // comment
-
-            _ => panic!("Invalid token type: {}", token_type),
-        }.to_string()
-    }
     pub fn get_regex_from_token(&self) -> String {
         match self {
             Token::Accept(_) => r"ACCEPT",
             Token::Add(_) => r"ADD",
+            Token::To(_) => r"TO",
             Token::Giving(_) => r"GIVING",
             Token::Display(_) => r"DISPLAY",
             Token::Delimited(_) => r"DELIMITED",
