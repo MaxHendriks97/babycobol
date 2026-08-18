@@ -9,10 +9,15 @@ pub enum Expr {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Atomic {
+    Literal(Literal),
+    Identifier(Identifier),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Literal {
     IntegerLiteral(i32),
     StringLiteral(String),
-    Identifier(Identifier),
-    BooleanLiteral(BooleanExpr),
+    BooleanLiteral(bool),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -83,16 +88,15 @@ pub enum Stmt {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DisplayVal {
-    value: Atomic,
-    delimited_by: DelimitedBy,
-    literal: Option<String>,
+    pub value: Atomic,
+    pub delimited_by: Option<DelimitedBy>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DelimitedBy {
     Size,
     Space,
-    Literal,
+    Literal(Literal),
 }
 
 #[derive(Debug, Clone, PartialEq)]
