@@ -1,6 +1,6 @@
 use crate::lexing::token::Token;
 
-use super::ast::{Atomic, BooleanExpr, DelimitedBy, DisplayVal, Identifier, Literal, Stmt};
+use super::ast::{Atomic, DelimitedBy, DisplayVal, Identifier, Literal, Stmt};
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -80,7 +80,7 @@ impl Parser {
             match token {
                 Token::IntegerLiteral(val) => values.push(Atomic::Literal(Literal::IntegerLiteral(val.clone()))),
                 Token::StringLiteral(val) => values.push(Atomic::Literal(Literal::StringLiteral(val.clone()))),
-                Token::BooleanLiteral(val) => values.push(Atomic::Literal(Literal::BooleanLiteral(BooleanExpr(val.clone())))),
+                Token::BooleanLiteral(val) => values.push(Atomic::Literal(Literal::BooleanLiteral(val.clone()))),
                 Token::Identifier(val) => values.push(Atomic::Identifier(Identifier(val.clone()))),
                 _ => break,
             }
@@ -95,7 +95,7 @@ impl Parser {
 
         self.expect(Token::To("".to_string()))?;
 
-        let target: Atomic = parse_atomic();
+        let target: Atomic = self.parse_atomic()?;
 
         let mut giving = None;
         if let Ok(Token::Giving(_)) = self.current() {
