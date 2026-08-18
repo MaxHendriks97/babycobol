@@ -5,6 +5,7 @@ pub enum Token {
     // keywords
     Accept(String),
     Add(String),
+    To(String),
     Giving(String),
     Display(String),
     Delimited(String),
