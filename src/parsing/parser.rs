@@ -1,6 +1,6 @@
-use crate::lexing::token::Token;
+use crate::{lexing::token::Token::{self, Evaluate}, parsing::ast::{DivideGiving, WhenExprStruct}};
 
-use super::ast::{Atomic, DelimitedBy, DisplayVal, Identifier, Literal, Stmt};
+use super::ast::{Atomic, DelimitedBy, DisplayVal, Expr, Identifier, Literal, Stmt, WhenClause, WhenClauseStruct};
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -27,6 +27,12 @@ impl Parser {
             (Token::To(_), Token::To(_)) => true,
             (Token::Delimited(_), Token::Delimited(_)) => true,
             (Token::By(_), Token::By(_)) => true,
+            (Token::Into(_), Token::Into(_)) => true,
+            (Token::Also(_), Token::Also(_)) => true,
+            (Token::When(_), Token::When(_)) => true,
+            (Token::Other(_), Token::Other(_)) => true,
+            (Token::Through(_), Token::Through(_)) => true,
+            (Token::End(_), Token::End(_)) => true,
             _ => false,
         };
 
@@ -52,6 +58,8 @@ impl Parser {
             Token::Accept(_) => self.parse_accept(),
             Token::Add(_) => self.parse_add(),
             Token::Display(_) => self.parse_display(),
+            Token::Divide(_) => self.parse_divide(),
+            Token::Evaluate(_) => self.parse_evaluate(),
             _ => Err(ParseError::UnexpectedToken(format!("Expected statement, found {:?}", token))),
         }
     }
@@ -165,6 +173,130 @@ impl Parser {
         })
     }
 
+    fn parse_divide(&mut self) -> Result<Stmt, ParseError> {
+        self.advance();
+
+        let value: Atomic = self.parse_atomic()?;
+
+        self.expect(Token::Into("".to_string()))?;
+
+        let mut into: Vec<Atomic> = vec!();
+        while let Ok(atomic) = self.parse_atomic() {
+            into.push(atomic);
+        }
+
+        if into.len() == 0 {
+            return Err(ParseError::UnexpectedToken(format!("Expected at least one atomic, found {:?}", self.current()?)));
+        }
+
+        let mut divide_giving: Option<DivideGiving> = None;
+        if let Ok(_) = self.expect(Token::Giving("".to_string())) {
+            let mut giving: Vec<Identifier> = vec!();
+            while let Ok(Token::Identifier(val)) = self.current() {
+                giving.push(Identifier(val.clone()));
+                self.advance();
+            }
+
+            if giving.len() == 0 {
+                return Err(ParseError::UnexpectedToken(format!("Expected at least one identifier, found {:?}", self.current()?)));
+            }
+
+            let mut remainder: Option<Identifier> = None;
+            if let Ok(_) = self.expect(Token::Remainder("".to_string())) {
+                remainder = match self.current()? {
+                    Token::Identifier(val) => Some(Identifier(val.clone())),
+                    _ => return Err(ParseError::UnexpectedToken(format!("Expected Identifier, found {:?}", self.current()?))),
+                };
+            }
+
+            divide_giving = Some(DivideGiving{
+                giving,
+                remainder,
+            });
+        }
+
+        Ok(Stmt::Divide {
+            value,
+            into,
+            divide_giving,
+        })
+    }
+
+    fn parse_evaluate(&mut self) -> Result<Stmt, ParseError> {
+        self.advance();
+
+        let expression = self.parse_expression()?;
+
+        let mut also: Vec<Expr> = vec!();
+        while let Ok(_) = self.expect(Token::Also("".to_string())) {
+            let expr = self.parse_expression()?;
+            also.push(expr);
+        }
+
+        let mut when: Vec<(WhenClause, Vec<Stmt>)> = vec!();
+        while let Ok(when_clause) = self.parse_when_clause() {
+            let mut stmts: Vec<Stmt> = vec!();
+            while let Ok(stmt) = self.parse_statement() {
+                stmts.push(stmt);
+            }
+
+            when.push((when_clause, stmts));
+        }
+
+        self.expect(Token::End("".to_string()))?;
+
+        Ok(Stmt::Evaluate {
+            expression,
+            also,
+            when,
+        })
+    }
+
+    fn parse_when_clause(&mut self) -> Result<WhenClause, ParseError> {
+        self.expect(Token::When("".to_string()))?;
+        if let Ok(_) = self.expect(Token::Other("".to_string())) {
+            return Ok(WhenClause::Other);
+        }
+
+        let mut when_exprs: Vec<WhenExprStruct> = vec!();
+        while let Ok(when_expr) = self.parse_when_expr() {
+            when_exprs.push(when_expr);
+        }
+
+        if when_exprs.len() == 0 {
+            return Err(ParseError::UnexpectedToken(format!("Expected at least one expression, found {:?}", self.current()?)));
+        }
+
+        let mut also_exprs: Vec<Vec<WhenExprStruct>> = vec!();
+        while let Ok(_) = self.expect(Token::Also("".to_string())) {
+            let mut also_expr_exprs: Vec<WhenExprStruct> = vec!();
+
+            while let Ok(when_expr) = self.parse_when_expr() {
+                also_expr_exprs.push(when_expr);
+            }
+
+            also_exprs.push(also_expr_exprs);
+        }
+
+        Ok(WhenClause::Expr(WhenClauseStruct {
+            when_exprs,
+            also_exprs,
+        }))
+    }
+
+    fn parse_when_expr(&mut self) -> Result<WhenExprStruct, ParseError> {
+        let expr = self.parse_expression()?;
+        let mut through: Option<Expr> = None;
+        if let Ok(_) = self.expect(Token::Through("".to_string())) {
+            through = Some(self.parse_expression()?);
+        }
+
+        Ok(WhenExprStruct {
+            expr,
+            through,
+        })
+    }
+
     fn parse_atomic(&mut self) -> Result<Atomic, ParseError> {
         let atomic = match self.current()? {
             Token::IntegerLiteral(val) => Atomic::Literal(Literal::IntegerLiteral(val.clone())),
@@ -180,6 +312,15 @@ impl Parser {
 
         Ok(atomic)
     }
+
+    fn parse_expression(&mut self) -> Result<Expr, ParseError> {
+        if let Ok(atomic) = self.parse_atomic() {
+            return Ok(Expr::Atomic(atomic));
+        }
+
+        Err(ParseError::UnexpectedToken(format!("Expected expression, found {:?}", self.current()?)))
+    }
+
 }
 
 pub enum ParseError {

@@ -1,10 +1,6 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Atomic(Atomic),
-    Assign {
-        name: String,
-        value: Box<Atomic>,
-    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -52,11 +48,11 @@ pub enum Stmt {
     Divide {
         value: Atomic,
         into: Vec<Atomic>,
-        giving: Option<DivideGiving>,
+        divide_giving: Option<DivideGiving>,
     },
     Evaluate {
         expression: Expr,
-        also: Option<Vec<Expr>>,
+        also: Vec<Expr>,
         when: Vec<(WhenClause, Vec<Stmt>)>,
     },
     If {
@@ -101,21 +97,26 @@ pub enum DelimitedBy {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DivideGiving {
-    giving: Vec<Identifier>,
-    remainder: Identifier,
+    pub giving: Vec<Identifier>,
+    pub remainder: Option<Identifier>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum WhenClause {
-    Expr(WhenExprStruct),
+    Expr(WhenClauseStruct),
     Other,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct WhenClauseStruct {
+    pub when_exprs: Vec<WhenExprStruct>,
+    pub also_exprs: Vec<Vec<WhenExprStruct>>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct WhenExprStruct {
-    expr: Expr,
-    through: Option<Expr>,
-    also: Box<WhenExprStruct>,
+    pub expr: Expr,
+    pub through: Option<Expr>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
